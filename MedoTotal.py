@@ -133,6 +133,9 @@ class MedoTotal(Problem):
                     pGrid[y] = pGrid[y][:x] + "F" + pGrid[y][x + 1:]
                     
         #after each character in a string, add " "
+        for i in range(len(pGrid)):
+            pGrid[i] = " ".join(pGrid[i])
+        
 
         # Join the modified lines with spaces to form the final string
         s = "\n".join(pGrid)
