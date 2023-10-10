@@ -1,5 +1,6 @@
 from searchPlus import *
 import utils
+import copy
 
 parametros="T=26\nM=6\nP=10"
 linha1= "= = = = = = = = = =\n"
@@ -59,8 +60,9 @@ class MedoTotal(Problem):
                     self.grid[y] = self.grid[y][:x] + "." + self.grid[y][x + 1:]
 
         costs = {}
+        costs[pos] = 1
 
-        #estado: (pacman,pastilhas,t,m)
+        #estado: (pacman,pastilhas,t,m, custos)
         self.initial = (pos, pastilhas, t, m, costs)
         
    
@@ -104,33 +106,36 @@ class MedoTotal(Problem):
         
     def result(self, state, action):
         a = MedoTotal.actionToVector(action)
+        ns = copy.deepcopy(state)
 
-        pPos = state[0]
+        pos = ns[0]
 
-        newPos = (pPos[0] + a[0], pPos[1] + a[1])
-        newPastilhas = state[1]
-        newM = state[3]
-        newCosts = state[4]
-        
+        np = (pos[0] + a[0], pos[1] + a[1])
+        newPastilhas = ns[1]
+        newM = ns[3]
+        newCosts = ns[4]
 
-        if(((newPos[0],newPos[1]) in newPastilhas)):
+        if(((np[0],np[1]) in newPastilhas)):
             newM = self.p
-            newPastilhas.remove(newPos)
+            newPastilhas.remove(np)
         else:
             newM -= 1
         
-        if(newPos in newCosts):
-            newCosts[newPos] += 1
+        if(np in newCosts):
+            newCosts[np] += 1
         else:
-            newCosts[newPos] = 1
+            newCosts[np] = 1
 
+        ns = (np, newPastilhas, state[2] - 1, newM, newCosts)
 
-        newState = (newPos, newPastilhas, state[2] - 1, newM, newCosts)
-
-        return newState
+        return ns
     
     def path_cost(self, c, state1,action,next_state):
-        pass
+
+        if(next_state[0] not in state1[4]):
+            return c + 1
+
+        return c + state1[4][next_state[0]]
         
     def goal_test(self, state):
         return state[2] <= 0 and state[3] >= 0
@@ -138,11 +143,12 @@ class MedoTotal(Problem):
     def executa(self,state,actions):
         """Partindo de state, executa a sequência (lista) de
           acções (em actions) e devolve o último estado"""
-        nstate = state
-        for a in actions:
-            nstate = self.result(nstate,a)
+        c = 0
+        for a in actions:            
+            nstate = self.result(state,a)
+            c = MedoTotal.path_cost(self, c, state, a, nstate)
 
-        return (nstate, sum(state[4].values()), MedoTotal.goal_test(self, nstate))
+        return (nstate, c, MedoTotal.goal_test(self, nstate))
     
     def display(self, state):
         s = ""
