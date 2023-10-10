@@ -75,9 +75,7 @@ class MedoTotal(Problem):
         #instant cut
         if(len(past) == 0 and t > m):
             return []
-        elif(min(pastDistances) > m):
-            print(min(pastDistances))
-            print("aa")
+        elif(min(pastDistances) > m and t > m):
             return []
         elif(min(pastDistances) + self.p * len(past) < t):
             return []
@@ -101,12 +99,13 @@ class MedoTotal(Problem):
                     actions.append("W")
         
         return actions
-
         
     def result(self, state, action):
+        a = MedoTotal.actionToVector(action)
+
         pPos = state[0]
 
-        newPos = (pPos[0] + action[0], pPos[1] + action[1])
+        newPos = (pPos[0] + a[0], pPos[1] + a[1])
         newPastilhas = state[1]
         newM = state[3]
 
@@ -116,19 +115,23 @@ class MedoTotal(Problem):
         else:
             newM -= 1
 
+        #copy.deepcopy(state)
         newState = (newPos, newPastilhas, state[2] - 1, newM)
 
         return newState
     
     def path_cost(self, c, state1,action,next_state):
         pass
-    
+        
+    def goal_test(self, state):
+        return state[2] <= 0 and state[3] >= 0
+
     def executa(self,state,actions):
         """Partindo de state, executa a sequência (lista) de
           acções (em actions) e devolve o último estado"""
         nstate = state
         for a in actions:
-            nstate = p.result(nstate,a)
+            nstate = self.result(nstate,a)
         return nstate
     
     def display(self, state):
@@ -137,12 +140,13 @@ class MedoTotal(Problem):
 
         for y in range(len(self.grid)):  # Iterate over all rows
             for x in range(len(self.grid[0])):  # Iterate over all columns
-                if (x, y) in state[1]:
-                    # Places the pastilhas
-                    pGrid[y] = pGrid[y][:x] + "*" + pGrid[y][x + 1:]
-                elif (x, y) == (state[0][0], state[0][1]):
+                if (x, y) == (state[0][0], state[0][1]):
                     # Places the pacman
                     pGrid[y] = pGrid[y][:x] + "@" + pGrid[y][x + 1:]
+                elif (x, y) in state[1]:
+                    # Places the pastilhas
+                    pGrid[y] = pGrid[y][:x] + "*" + pGrid[y][x + 1:]
+                
                 elif (x, y) == self.f:
                     # Places the ghost
                     pGrid[y] = pGrid[y][:x] + "F" + pGrid[y][x + 1:]
@@ -178,3 +182,14 @@ class MedoTotal(Problem):
         canMove = (c != "=") and (newPos != self.f) 
 
         return canMove
+
+    @staticmethod
+    def actionToVector(action):
+        if(action == "N"):
+            return N
+        elif(action == "S"):
+            return S
+        elif(action == "E"):
+            return E
+        elif(action == "W"):
+            return W
