@@ -77,8 +77,9 @@ class MedoTotal(Problem):
         actions = []
 
         #instant cut
-        if(len(past) == 0 and t > m):
-            return []
+        if(len(past) == 0):
+            if(t > m):
+                return []
         elif(min(pastDistances) > m and t > m):
             return []
         elif(min(pastDistances) + self.p * len(past) < t):
@@ -132,10 +133,10 @@ class MedoTotal(Problem):
     
     def path_cost(self, c, state1,action,next_state):
 
-        if(next_state[0] not in state1[4]):
-            return c + 1
+        # if(next_state[0] not in state1[4]):
+        #     return c + 1
 
-        return c + state1[4][next_state[0]]
+        return c + next_state[4][next_state[0]]
         
     def goal_test(self, state):
         return state[2] <= 0 and state[3] >= 0
@@ -144,8 +145,9 @@ class MedoTotal(Problem):
         """Partindo de state, executa a sequência (lista) de
           acções (em actions) e devolve o último estado"""
         c = 0
-        for a in actions:            
-            nstate = self.result(state,a)
+        nstate = state
+        for a in actions:     
+            nstate = self.result(nstate,a)
             c = MedoTotal.path_cost(self, c, state, a, nstate)
 
         return (nstate, c, MedoTotal.goal_test(self, nstate))
