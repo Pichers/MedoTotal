@@ -58,8 +58,10 @@ class MedoTotal(Problem):
                     
                     self.grid[y] = self.grid[y][:x] + "." + self.grid[y][x + 1:]
 
+        costs = {}
+
         #estado: (pacman,pastilhas,t,m)
-        self.initial = (pos, pastilhas, t, m)
+        self.initial = (pos, pastilhas, t, m, costs)
         
    
     def actions(self, state):
@@ -108,15 +110,22 @@ class MedoTotal(Problem):
         newPos = (pPos[0] + a[0], pPos[1] + a[1])
         newPastilhas = state[1]
         newM = state[3]
+        newCosts = state[4]
+        
 
-        if(self.grid[newPos[1]][newPos[0]] == "*"):
+        if(((newPos[0],newPos[1]) in newPastilhas)):
             newM = self.p
-            utils.removeall(newPos, newPastilhas)
+            newPastilhas.remove(newPos)
         else:
             newM -= 1
+        
+        if(newPos in newCosts):
+            newCosts[newPos] += 1
+        else:
+            newCosts[newPos] = 1
 
-        #copy.deepcopy(state)
-        newState = (newPos, newPastilhas, state[2] - 1, newM)
+
+        newState = (newPos, newPastilhas, state[2] - 1, newM, newCosts)
 
         return newState
     
@@ -132,7 +141,8 @@ class MedoTotal(Problem):
         nstate = state
         for a in actions:
             nstate = self.result(nstate,a)
-        return nstate
+
+        return (nstate, sum(state[4].values()), MedoTotal.goal_test(self, nstate))
     
     def display(self, state):
         s = ""
