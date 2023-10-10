@@ -15,6 +15,11 @@ linha10="= = = = = = = = = =\n"
 grelha=linha1+linha2+linha3+linha4+linha5+linha6+linha7+linha8+linha9+linha10
 mundoStandard=parametros + "\n" + grelha
 
+N = (0,-1)
+W = (-1,0)
+E = (1,0)
+S = (0,1)
+
 #
 # Alterar o GRID para não conter espaços 
 # (desnecessario excepto para o display)
@@ -78,10 +83,6 @@ class MedoTotal(Problem):
             return []
         
         #actions (1 para N/S e 2 for each move because of spaces in the grid)
-        N = (0,-1)
-        W = (-1,0)
-        E = (1,0)
-        S = (0,1)
         
         directions = [N, W, E, S]
 
@@ -103,7 +104,21 @@ class MedoTotal(Problem):
 
         
     def result(self, state, action):
-        pass
+        pPos = state[0]
+
+        newPos = (pPos[0] + action[0], pPos[1] + action[1])
+        newPastilhas = state[1]
+        newM = state[3]
+
+        if(self.grid[newPos[1]][newPos[0]] == "*"):
+            newM = self.p
+            utils.removeall(newPos, newPastilhas)
+        else:
+            newM -= 1
+
+        newState = (newPos, newPastilhas, state[2] - 1, newM)
+
+        return newState
     
     def path_cost(self, c, state1,action,next_state):
         pass
